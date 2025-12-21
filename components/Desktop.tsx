@@ -1120,7 +1120,7 @@ export const Desktop: React.FC<DesktopProps> = ({
     
     // 检查是否有文件夹
     const entries: FileSystemEntry[] = [];
-    const dataItems = Array.from(dataTransfer.items);
+    const dataItems = Array.from(dataTransfer.items) as DataTransferItem[];
     
     for (const item of dataItems) {
       if (item.kind === 'file') {
