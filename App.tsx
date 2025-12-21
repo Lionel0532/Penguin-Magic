@@ -1725,22 +1725,59 @@ const App: React.FC = () => {
   // 图片下载逻辑已迁移到 services/export/desktopExporter.ts
   // 使用 downloadImage from './services/export'
 
-  const handleExportIdeas = () => {
+  // 导出创意库：将本地图片转换为base64确保跨设备导入时图片不丢失
+  const handleExportIdeas = async () => {
     if (creativeIdeas.length === 0) {
         alert("库是空的 / Library is empty.");
         return;
     }
-    const dataStr = JSON.stringify(creativeIdeas, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
     
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'creative_library.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // 转换本地图片为base64
+    const convertImageToBase64 = async (url: string): Promise<string> => {
+      // 如果已经是base64或外部URL，直接返回
+      if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      // 本地路径，fetch并转换为base64
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch (e) {
+        console.warn('图片转换失败:', url, e);
+        return url; // 转换失败时保留原始路径
+      }
+    };
+    
+    try {
+      // 显示导出中提示
+      const ideasWithBase64 = await Promise.all(
+        creativeIdeas.map(async (idea) => ({
+          ...idea,
+          imageUrl: await convertImageToBase64(idea.imageUrl)
+        }))
+      );
+      
+      const dataStr = JSON.stringify(ideasWithBase64, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'creative_library.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('导出失败:', e);
+      alert('导出失败');
+    }
   };
   
     const handleImportIdeas = (event: React.ChangeEvent<HTMLInputElement>) => {
