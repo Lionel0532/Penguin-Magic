@@ -2198,9 +2198,9 @@ const App: React.FC = () => {
       // 如果不允许查看提示词，保存时用占位文本
       const promptToSave = canViewPrompt ? finalPrompt : '[加密提示词]';
       
-      // 加密场景下的命名规则：创意库标题 + 关键词
+      // 命名规则：有创意库时用“创意库标题 + 关键词”，否则用提示词
       let promptForDesktop = finalPrompt;
-      if (!canViewPrompt && activeTemplate) {
+      if (activeTemplate) {
         // 获取创意库标题
         const templateTitle = activeTemplate.title || '创意库';
         // 获取关键词：BP模式用bpInputs的第一个输入，Smart/Smart+模式用prompt

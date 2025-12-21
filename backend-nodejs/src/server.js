@@ -61,6 +61,7 @@ if (require('fs').existsSync(config.DIST_DIR)) {
 app.use('/files/output', express.static(config.OUTPUT_DIR));
 app.use('/files/input', express.static(config.INPUT_DIR));
 app.use('/files/creative', express.static(config.CREATIVE_IMAGES_DIR));
+app.use('/files/creative_images', express.static(config.CREATIVE_IMAGES_DIR)); // 兼容旧路径
 
 // ============== API路由 ==============
 app.use('/api/creative-ideas', creativeRouter);
